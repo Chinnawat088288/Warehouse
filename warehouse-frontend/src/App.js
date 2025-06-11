@@ -72,7 +72,7 @@ function App() {
     }
   };
 
-  // ฟังก์ชันสำหรับ pick
+  // ฟังก์ชันสำหรับ pickk
   const handlePick = async (id) => {
     try {
       const res = await axios.post(`http://localhost:3000/api/transfer-tasks/${id}/pick`);
