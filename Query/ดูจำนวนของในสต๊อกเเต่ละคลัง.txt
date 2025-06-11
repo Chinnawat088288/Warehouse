@@ -1,0 +1,39 @@
+SELECT 
+    สต็อกคลัง.id,
+    คลังสินค้า.ชื่อคลัง,
+    สินค้า.ชื่อสินค้า,
+    สต็อกคลัง.จำนวน
+FROM สต็อกคลัง
+INNER JOIN คลังสินค้า ON สต็อกคลัง.คลัง_id = คลังสินค้า.id
+INNER JOIN สินค้า ON สต็อกคลัง.สินค้า_id = สินค้า.id;
+
+สินค้าid
+id	ชื่อสินค้า	รหัสสินค้า
+1	มาม่า	SKU001
+2	โค๊ก	SKU002
+3	ไส้กรอก	SKU003
+4	ซอสมะเขือเทศแบบขวด	SKU004
+5	ขนมเลย์	SKU005
+------------------
+เติมคลัง 
+POST http://localhost:3000/api/transfer-tasks
+Content-Type: application/json
+
+{
+  "สินค้า_id": 1,
+  "จำนวน": 10,
+  "จากคลัง_id": 1,
+  "ไปยังคลัง_id": 2
+}
+--------------------------
+หยิบของออกจากคลังต้นทาง (pick)
+POST http://localhost:3000/api/transfer-tasks/{id}/pick
+--------------------------
+ นำของเข้าคลังปลายทาง (complete)
+POST http://localhost:3000/api/transfer-tasks/{id}/complete
+
+
+------------
+git add .
+git commit -m "เพิ่มไฟล์โปรเจกต์แรก"
+git push -u origin main
