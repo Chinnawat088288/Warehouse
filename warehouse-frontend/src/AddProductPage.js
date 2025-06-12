@@ -92,20 +92,36 @@ function AddProductPage() {
   return (
     <div className="main-container">
       <h2 className="page-title">เพิ่มชนิดสินค้า</h2>
-      <form className="add-product-form" onSubmit={handleAddProduct}>
-        <div className="form-row">
-          <label>ชื่อสินค้า</label>
-          <input value={ชื่อสินค้า} onChange={e => setชื่อสินค้า(e.target.value)} required />
+      <form className="add-product-form" onSubmit={handleAddProduct} style={{ maxWidth: 400, margin: '0 auto', background: '#f8fafc', borderRadius: 12, padding: 20, boxShadow: '0 1px 8px #6366f122' }}>
+        <div className="form-row" style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 600, marginBottom: 6, display: 'block', color: '#312e81' }}>ชื่อสินค้า</label>
+          <input
+            value={ชื่อสินค้า}
+            onChange={e => setชื่อสินค้า(e.target.value)}
+            required
+            className="input"
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16 }}
+            placeholder="กรอกชื่อสินค้า เช่น น้ำดื่ม"
+          />
         </div>
-        <div className="form-row">
-          <label>จำนวนเริ่มต้น</label>
-          <input type="number" min="1" value={จำนวน} onChange={e => setจำนวน(e.target.value)} required />
+        <div className="form-row" style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 600, marginBottom: 6, display: 'block', color: '#312e81' }}>จำนวนเริ่มต้น</label>
+          <input
+            type="number"
+            min="1"
+            value={จำนวน}
+            onChange={e => setจำนวน(e.target.value)}
+            required
+            className="input"
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16 }}
+            placeholder="กรอกจำนวนเริ่มต้น"
+          />
         </div>
-        <button type="submit" className="btn-primary">เพิ่มสินค้าใหม่</button>
+        <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>เพิ่มสินค้าใหม่</button>
       </form>
-      <div style={{ marginTop: 12, color: resultSuccess ? 'green' : 'red', fontWeight: 600 }}>{result}</div>
+      <div style={{ marginTop: 12, color: resultSuccess ? 'green' : 'red', fontWeight: 600, textAlign: 'center' }}>{result}</div>
 
-      <h3 style={{ marginTop: 32 }}>รายการสินค้าทั้งหมด</h3>
+      <h3 style={{ marginTop: 32, color: '#312e81' }}>รายการสินค้าทั้งหมด</h3>
       <div className="table-container">
         <table className="product-table">
           <thead>
@@ -120,51 +136,53 @@ function AddProductPage() {
           <tbody>
             {products.map(p => (
               <tr key={p.id}>
-                <td>
+                <td data-label="ชื่อสินค้า">
                   <span
                     className="product-link"
+                    style={{ fontWeight: 500, color: '#6366f1', cursor: 'pointer' }}
                     onClick={() => { setAddStockId(p.id); setAddStockValue(''); }}
                   >
                     {p.ชื่อสินค้า}
                   </span>
                 </td>
-                <td style={{ textAlign: 'center' }}>{p.SKU}</td>
-                <td style={{ textAlign: 'center' }}>{p.จำนวนในคลังสำรอง}</td>
-                <td style={{ textAlign: 'center' }}>
+                <td data-label="SKU" style={{ textAlign: 'center' }}>{p.SKU}</td>
+                <td data-label="คลังทั้งหมด" style={{ textAlign: 'center' }}>{p.จำนวนในคลังสำรอง}</td>
+                <td data-label="จำนวน" style={{ textAlign: 'center' }}>
                   {addStockId === p.id ? (
-                    <form onSubmit={handleAddStock} style={{ display: 'flex', gap: 4 }}>
+                    <form onSubmit={handleAddStock} style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                       <input
                         type="number"
                         min="1"
                         value={addStockValue}
                         onChange={e => setAddStockValue(e.target.value)}
                         required
-                        style={{ width: 60 }}
+                        style={{ width: 60, borderRadius: 6, border: '1px solid #c7d2fe', padding: 6 }}
+                        placeholder="จำนวน"
                       />
-                      <button type="submit" className="btn-primary" style={{ padding: '4px 12px' }}>เพิ่ม</button>
-                      <button type="button" className="btn-secondary" onClick={() => setAddStockId(null)}>ยกเลิก</button>
+                      <button type="submit" className="btn-primary" style={{ padding: '4px 12px', borderRadius: 6 }}>เพิ่ม</button>
+                      <button type="button" className="btn-secondary" style={{ borderRadius: 6 }} onClick={() => setAddStockId(null)}>ยกเลิก</button>
                     </form>
                   ) : (
                     <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                       <button
                         className="btn-secondary"
-                        style={{ color: '#dc2626', borderColor: '#fca5a5', fontWeight: 700 }}
+                        style={{ color: '#dc2626', borderColor: '#fca5a5', fontWeight: 700, borderRadius: 6 }}
                         onClick={() => handleReduceStock(p.id)}
                         title="ลดจำนวน"
                       >-</button>
                       <button
                         className="btn-secondary"
                         onClick={() => { setAddStockId(p.id); setAddStockValue(''); }}
-                        style={{ fontWeight: 700 }}
+                        style={{ fontWeight: 700, borderRadius: 6 }}
                         title="เพิ่มจำนวน"
                       >+</button>
                     </div>
                   )}
                 </td>
-                <td style={{ textAlign: 'center' }}>
+                <td data-label="ลบสินค้า" style={{ textAlign: 'center' }}>
                   <button
                     className="btn-secondary"
-                    style={{ color: 'red', borderColor: '#fca5a5' }}
+                    style={{ color: 'red', borderColor: '#fca5a5', borderRadius: 6 }}
                     onClick={() => handleDeleteProduct(p.id)}
                   >
                     ลบ

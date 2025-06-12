@@ -107,55 +107,202 @@ function TransferPage() {
         {nav === 'delivery' && (
           <>
             <h2 style={{ color: '#312e81', marginBottom: 18 }}>เติมคลัง Delivery</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 80 }}>สินค้า_id</label>
-                <input value={สินค้า_id} onChange={e => setสินค้า_id(e.target.value)} required className="input" style={{ width: 120 }} />
+            <form onSubmit={handleSubmit} style={{
+              maxWidth: 400,
+              margin: '0 auto',
+              background: '#f8fafc',
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: '0 1px 8px #6366f122',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 18
+            }}>
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+                <input
+                  value={สินค้า_id}
+                  onChange={e => setสินค้า_id(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกสินค้า ID เช่น 1"
+                />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 60 }}>จำนวน</label>
-                <input value={จำนวน} onChange={e => setจำนวน(e.target.value)} required className="input" style={{ width: 80 }} />
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={จำนวน}
+                  onChange={e => setจำนวน(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกจำนวน"
+                />
               </div>
-              <button type="submit" className="btn-primary" style={{ minWidth: 110 }}>สร้างใบงาน</button>
+              <button type="submit" className="btn-primary" style={{
+                width: '100%',
+                padding: 12,
+                fontSize: 17,
+                borderRadius: 8
+              }}>
+                สร้างใบงาน
+              </button>
             </form>
           </>
         )}
         {nav === 'storefront' && (
           <>
             <h2 style={{ color: '#312e81', marginBottom: 18 }}>เติมคลังหน้าร้าน</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 80 }}>สินค้า_id</label>
-                <input value={สินค้า_id} onChange={e => setสินค้า_id(e.target.value)} required className="input" style={{ width: 120 }} />
+            <form onSubmit={handleSubmit} style={{
+              maxWidth: 400,
+              margin: '0 auto',
+              background: '#f8fafc',
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: '0 1px 8px #6366f122',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 18
+            }}>
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+                <input
+                  value={สินค้า_id}
+                  onChange={e => setสินค้า_id(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกสินค้า ID เช่น 1"
+                />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 60 }}>จำนวน</label>
-                <input value={จำนวน} onChange={e => setจำนวน(e.target.value)} required className="input" style={{ width: 80 }} />
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={จำนวน}
+                  onChange={e => setจำนวน(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกจำนวน"
+                />
               </div>
-              <button type="submit" className="btn-primary" style={{ minWidth: 110 }}>สร้างใบงาน</button>
+              <button type="submit" className="btn-primary" style={{
+                width: '100%',
+                padding: 12,
+                fontSize: 17,
+                borderRadius: 8
+              }}>
+                สร้างใบงาน
+              </button>
             </form>
           </>
         )}
         {nav === 'return' && (
           <>
             <h2 style={{ color: '#312e81', marginBottom: 18 }}>คืนคลังสำรอง</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 90 }}>คืนจากคลัง</label>
-                <select value={คืนจากคลัง} onChange={e => setคืนจากคลัง(e.target.value)} className="input" style={{ width: 120 }}>
+            <form onSubmit={handleSubmit} style={{
+              maxWidth: 400,
+              margin: '0 auto',
+              background: '#f8fafc',
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: '0 1px 8px #6366f122',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 18
+            }}>
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>คืนจากคลัง</label>
+                <select
+                  value={คืนจากคลัง}
+                  onChange={e => setคืนจากคลัง(e.target.value)}
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16,
+                    background: '#fff'
+                  }}
+                >
                   <option value="2">คลัง Delivery</option>
                   <option value="3">คลังหน้าร้าน</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 80 }}>สินค้า_id</label>
-                <input value={สินค้า_id} onChange={e => setสินค้า_id(e.target.value)} required className="input" style={{ width: 120 }} />
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+                <input
+                  value={สินค้า_id}
+                  onChange={e => setสินค้า_id(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกสินค้า ID เช่น 1"
+                />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontWeight: 500, minWidth: 60 }}>จำนวน</label>
-                <input value={จำนวน} onChange={e => setจำนวน(e.target.value)} required className="input" style={{ width: 80 }} />
+              <div className="form-row">
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={จำนวน}
+                  onChange={e => setจำนวน(e.target.value)}
+                  required
+                  className="input"
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16
+                  }}
+                  placeholder="กรอกจำนวน"
+                />
               </div>
-              <button type="submit" className="btn-primary" style={{ minWidth: 110 }}>สร้างใบงาน</button>
+              <button type="submit" className="btn-primary" style={{
+                width: '100%',
+                padding: 12,
+                fontSize: 17,
+                borderRadius: 8
+              }}>
+                สร้างใบงาน
+              </button>
             </form>
           </>
         )}
