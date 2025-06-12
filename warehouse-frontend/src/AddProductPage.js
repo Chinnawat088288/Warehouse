@@ -10,11 +10,12 @@ function AddProductPage() {
   const [resultSuccess, setResultSuccess] = useState(false);
   const [addStockId, setAddStockId] = useState(null);
   const [addStockValue, setAddStockValue] = useState('');
+  const [reduceMode, setReduceMode] = useState(false);
 
   // โหลดสินค้าทั้งหมด
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/products');
+      const res = await axios.get('http://172.20.10.5:3000/api/products');
       setProducts(res.data);
     } catch (err) {
       setProducts([]);
@@ -31,7 +32,7 @@ function AddProductPage() {
     setResult('');
     setResultSuccess(false);
     try {
-      await axios.post('http://localhost:3000/api/add-product', { ชื่อสินค้า, จำนวน: Number(จำนวน) });
+      await axios.post('http://172.20.10.5:3000/api/add-product', { ชื่อสินค้า, จำนวน: Number(จำนวน) });
       setResult('เพิ่มสินค้าเรียบร้อย');
       setResultSuccess(true);
       setชื่อสินค้า('');
@@ -47,7 +48,7 @@ function AddProductPage() {
   const handleAddStock = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/api/add-stock', { สินค้า_id: addStockId, จำนวน: Number(addStockValue) });
+      await axios.post('http://172.20.10.5:3000/api/add-stock', { สินค้า_id: addStockId, จำนวน: Number(addStockValue) });
       setResult('เพิ่มจำนวนสินค้าในคลังทั้งหมดเรียบร้อย');
       setResultSuccess(true);
       setAddStockId(null);
@@ -63,7 +64,7 @@ function AddProductPage() {
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?')) return;
     try {
-      await axios.delete(`http://localhost:3000/api/products/${id}`);
+      await axios.delete(`http://172.20.10.5:3000/api/products/${id}`);
       setResult('ลบสินค้าเรียบร้อย');
       setResultSuccess(true);
       fetchProducts();
@@ -74,14 +75,17 @@ function AddProductPage() {
   };
 
   // ลดจำนวนสินค้าในคลังทั้งหมด
-  const handleReduceStock = async (id) => {
-    const value = window.prompt('กรอกจำนวนที่ต้องการลด (ตัวเลขบวกเท่านั้น):');
-    const qty = Number(value);
+  const handleReduceStock = async (e) => {
+    e.preventDefault();
+    const qty = Number(addStockValue);
     if (!qty || qty < 1) return;
     try {
-      await axios.post('http://localhost:3000/api/add-stock', { สินค้า_id: id, จำนวน: -qty });
+      await axios.post('http://172.20.10.5:3000/api/add-stock', { สินค้า_id: addStockId, จำนวน: -qty });
       setResult('ลดจำนวนสินค้าในคลังทั้งหมดเรียบร้อย');
       setResultSuccess(true);
+      setAddStockId(null);
+      setAddStockValue('');
+      setReduceMode(false);
       fetchProducts();
     } catch (err) {
       setResult(err.response?.data?.error || 'เกิดข้อผิดพลาด');
@@ -149,7 +153,10 @@ function AddProductPage() {
                 <td data-label="คลังทั้งหมด" style={{ textAlign: 'center' }}>{p.จำนวนในคลังสำรอง}</td>
                 <td data-label="จำนวน" style={{ textAlign: 'center' }}>
                   {addStockId === p.id ? (
-                    <form onSubmit={handleAddStock} style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                    <form
+                      onSubmit={reduceMode ? handleReduceStock : handleAddStock}
+                      style={{ display: 'flex', gap: 4, justifyContent: 'center' }}
+                    >
                       <input
                         type="number"
                         min="1"
@@ -159,20 +166,29 @@ function AddProductPage() {
                         style={{ width: 60, borderRadius: 6, border: '1px solid #c7d2fe', padding: 6 }}
                         placeholder="จำนวน"
                       />
-                      <button type="submit" className="btn-primary" style={{ padding: '4px 12px', borderRadius: 6 }}>เพิ่ม</button>
-                      <button type="button" className="btn-secondary" style={{ borderRadius: 6 }} onClick={() => setAddStockId(null)}>ยกเลิก</button>
+                      <button type="submit" className="btn-primary" style={{ padding: '4px 12px', borderRadius: 6 }}>
+                        {reduceMode ? 'ลด' : 'เพิ่ม'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ borderRadius: 6 }}
+                        onClick={() => { setAddStockId(null); setAddStockValue(''); setReduceMode(false); }}
+                      >
+                        ยกเลิก
+                      </button>
                     </form>
                   ) : (
                     <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                       <button
                         className="btn-secondary"
                         style={{ color: '#dc2626', borderColor: '#fca5a5', fontWeight: 700, borderRadius: 6 }}
-                        onClick={() => handleReduceStock(p.id)}
+                        onClick={() => { setAddStockId(p.id); setAddStockValue(''); setReduceMode(true); }}
                         title="ลดจำนวน"
                       >-</button>
                       <button
                         className="btn-secondary"
-                        onClick={() => { setAddStockId(p.id); setAddStockValue(''); }}
+                        onClick={() => { setAddStockId(p.id); setAddStockValue(''); setReduceMode(false); }}
                         style={{ fontWeight: 700, borderRadius: 6 }}
                         title="เพิ่มจำนวน"
                       >+</button>
