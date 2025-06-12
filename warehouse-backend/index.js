@@ -161,7 +161,29 @@ app.post('/api/transfer-tasks/:id/complete', async (req, res) => {
     }
 });
 
+// ดึงรายการสินค้า พร้อมจำนวนรวมในคลังทั้งหมด
+app.get('/api/products', async (req, res) => {
+    try {
+        await sql.connect(dbConfig);
+        // ดึงข้อมูลสินค้าและรวมจำนวนจากทุกคลัง
+        const result = await sql.query(`
+            SELECT 
+                p.id,
+                p.ชื่อสินค้า,
+                p.SKU,
+                ISNULL(SUM(s.จำนวน), 0) AS จำนวนในคลังสำรอง
+            FROM สินค้า p
+            LEFT JOIN สต็อกคลัง s ON s.สินค้า_id = p.id
+            GROUP BY p.id, p.ชื่อสินค้า, p.SKU
+            ORDER BY p.id
+        `);
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Server running on 0.0.0.0:3000');
 });
