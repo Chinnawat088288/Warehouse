@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,6 +28,10 @@ function TransferPage() {
   const [result, setResult] = useState('');
   const [resultSuccess, setResultSuccess] = useState(false);
   const [tasks, setTasks] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef();
   const navigate = useNavigate();
 
   const fetchTasks = async () => {
@@ -40,7 +44,34 @@ function TransferPage() {
   };
 
   useEffect(() => {
+    axios.get('http://localhost:3000/api/products').then(res => setProducts(res.data));
+  }, []);
+
+  useEffect(() => {
     fetchTasks();
+  }, []);
+
+  const filteredProducts = productSearch
+    ? products.filter(p =>
+        p.id.toString().includes(productSearch) ||
+        (p.ชื่อสินค้า && p.ชื่อสินค้า.toLowerCase().includes(productSearch.toLowerCase()))
+      )
+    : products;
+
+  const handleSelectProduct = (p) => {
+    setสินค้า_id(p.id);
+    setProductSearch(p.ชื่อสินค้า + ' (' + p.id + ')');
+    setShowDropdown(false);
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -118,22 +149,52 @@ function TransferPage() {
               flexDirection: 'column',
               gap: 18
             }}>
-              <div className="form-row">
-                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+              <div className="form-row" ref={searchRef} style={{ position: 'relative', marginBottom: 16, minHeight: 80 }}>
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>ค้นหาสินค้า (ID หรือ ชื่อ)</label>
                 <input
-                  value={สินค้า_id}
-                  onChange={e => setสินค้า_id(e.target.value)}
+                  value={productSearch}
+                  onChange={e => {
+                    setProductSearch(e.target.value);
+                    setShowDropdown(true);
+                    setสินค้า_id('');
+                  }}
+                  onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
-                  placeholder="กรอกสินค้า ID เช่น 1"
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {showDropdown && filteredProducts.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 64,
+                    left: 0,
+                    right: 0,
+                    background: '#fff',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: 8,
+                    zIndex: 100,
+                    maxHeight: 220,
+                    overflowY: 'auto',
+                    boxShadow: '0 2px 8px #6366f122'
+                  }}>
+                    {filteredProducts.slice(0, 10).map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSelectProduct(p)}
+                        style={{
+                          padding: '10px 16px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f1f5f9',
+                          color: '#312e81',
+                          fontWeight: 500
+                        }}
+                      >
+                        {p.ชื่อสินค้า} <span style={{ color: '#888', fontSize: 13 }}>({p.id})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="form-row">
                 <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
@@ -144,22 +205,11 @@ function TransferPage() {
                   onChange={e => setจำนวน(e.target.value)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16 }}
                   placeholder="กรอกจำนวน"
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{
-                width: '100%',
-                padding: 12,
-                fontSize: 17,
-                borderRadius: 8
-              }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>
                 สร้างใบงาน
               </button>
             </form>
@@ -179,22 +229,52 @@ function TransferPage() {
               flexDirection: 'column',
               gap: 18
             }}>
-              <div className="form-row">
-                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+              <div className="form-row" ref={searchRef} style={{ position: 'relative', marginBottom: 16, minHeight: 80 }}>
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>ค้นหาสินค้า (ID หรือ ชื่อ)</label>
                 <input
-                  value={สินค้า_id}
-                  onChange={e => setสินค้า_id(e.target.value)}
+                  value={productSearch}
+                  onChange={e => {
+                    setProductSearch(e.target.value);
+                    setShowDropdown(true);
+                    setสินค้า_id('');
+                  }}
+                  onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
-                  placeholder="กรอกสินค้า ID เช่น 1"
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {showDropdown && filteredProducts.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 64,
+                    left: 0,
+                    right: 0,
+                    background: '#fff',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: 8,
+                    zIndex: 100,
+                    maxHeight: 220,
+                    overflowY: 'auto',
+                    boxShadow: '0 2px 8px #6366f122'
+                  }}>
+                    {filteredProducts.slice(0, 10).map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSelectProduct(p)}
+                        style={{
+                          padding: '10px 16px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f1f5f9',
+                          color: '#312e81',
+                          fontWeight: 500
+                        }}
+                      >
+                        {p.ชื่อสินค้า} <span style={{ color: '#888', fontSize: 13 }}>({p.id})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="form-row">
                 <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
@@ -205,22 +285,11 @@ function TransferPage() {
                   onChange={e => setจำนวน(e.target.value)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16 }}
                   placeholder="กรอกจำนวน"
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{
-                width: '100%',
-                padding: 12,
-                fontSize: 17,
-                borderRadius: 8
-              }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>
                 สร้างใบงาน
               </button>
             </form>
@@ -246,35 +315,58 @@ function TransferPage() {
                   value={คืนจากคลัง}
                   onChange={e => setคืนจากคลัง(e.target.value)}
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16,
-                    background: '#fff'
-                  }}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, background: '#fff' }}
                 >
                   <option value="2">คลัง Delivery</option>
                   <option value="3">คลังหน้าร้าน</option>
                 </select>
               </div>
-              <div className="form-row">
-                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>สินค้า ID</label>
+              <div className="form-row" ref={searchRef} style={{ position: 'relative', marginBottom: 16, minHeight: 80 }}>
+                <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>ค้นหาสินค้า (ID หรือ ชื่อ)</label>
                 <input
-                  value={สินค้า_id}
-                  onChange={e => setสินค้า_id(e.target.value)}
+                  value={productSearch}
+                  onChange={e => {
+                    setProductSearch(e.target.value);
+                    setShowDropdown(true);
+                    setสินค้า_id('');
+                  }}
+                  onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
-                  placeholder="กรอกสินค้า ID เช่น 1"
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {showDropdown && filteredProducts.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 64,
+                    left: 0,
+                    right: 0,
+                    background: '#fff',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: 8,
+                    zIndex: 100,
+                    maxHeight: 220,
+                    overflowY: 'auto',
+                    boxShadow: '0 2px 8px #6366f122'
+                  }}>
+                    {filteredProducts.slice(0, 10).map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSelectProduct(p)}
+                        style={{
+                          padding: '10px 16px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f1f5f9',
+                          color: '#312e81',
+                          fontWeight: 500
+                        }}
+                      >
+                        {p.ชื่อสินค้า} <span style={{ color: '#888', fontSize: 13 }}>({p.id})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="form-row">
                 <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
@@ -285,22 +377,11 @@ function TransferPage() {
                   onChange={e => setจำนวน(e.target.value)}
                   required
                   className="input"
-                  style={{
-                    width: '100%',
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #c7d2fe',
-                    fontSize: 16
-                  }}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16 }}
                   placeholder="กรอกจำนวน"
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{
-                width: '100%',
-                padding: 12,
-                fontSize: 17,
-                borderRadius: 8
-              }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>
                 สร้างใบงาน
               </button>
             </form>

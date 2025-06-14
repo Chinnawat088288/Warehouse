@@ -17,6 +17,7 @@ const statusMap = {
 function TaskDetail() {
   const { id } = useParams();
   const [task, setTask] = useState(null);
+  const [items, setItems] = useState([]);
   const [result, setResult] = useState('');
   const [resultSuccess, setResultSuccess] = useState(false);
 
@@ -26,6 +27,9 @@ function TaskDetail() {
         const found = res.data.find(t => t.id === Number(id));
         setTask(found);
       });
+
+    axios.get(`http://localhost:3000/api/transfer-tasks/${id}/items`)
+      .then(res => setItems(res.data));
   }, [id]);
 
   const handlePick = async () => {
@@ -64,6 +68,24 @@ function TaskDetail() {
       padding: 32
     }}>
       <h2 style={{ color: '#312e81', marginBottom: 18 }}>รายละเอียดใบงาน #{task.id}</h2>
+      {/* ตารางชื่อสินค้าและจำนวน */}
+      <table style={{ width: '100%', marginBottom: 16 }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: 'left' }}>ชื่อสินค้า</th>
+            <th style={{ textAlign: 'center' }}>จำนวนที่ต้องเติม</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(item => (
+            <tr key={item.id}>
+              <td style={{ color: 'red', fontWeight: 600 }}>{item.ชื่อสินค้า}</td>
+              <td style={{ color: 'red', textAlign: 'center', fontWeight: 600 }}>{item.จำนวน}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* ข้อมูลจาก, ไปยัง, สถานะ */}
       <p>จาก: <b>{warehouseNames[task.จากคลัง_id]}</b></p>
       <p>ไปยัง: <b>{warehouseNames[task.ไปยังคลัง_id]}</b></p>
       <p>สถานะ: <span style={{

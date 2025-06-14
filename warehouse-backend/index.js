@@ -233,6 +233,14 @@ app.post('/api/add-product', async (req, res) => {
     try {
         await sql.connect(dbConfig);
 
+        // ตรวจสอบชื่อสินค้าซ้ำ
+        const dupRes = await sql.query`
+            SELECT id FROM สินค้า WHERE ชื่อสินค้า = ${ชื่อสินค้า}
+        `;
+        if (dupRes.recordset.length > 0) {
+            return res.status(400).json({ error: 'มีชื่อสินค้านี้อยู่แล้ว' });
+        }
+
         // หา SKU ล่าสุดในฐานข้อมูล
         const skuRes = await sql.query`
             SELECT TOP 1 SKU FROM สินค้า
@@ -282,6 +290,22 @@ app.delete('/api/products/:id', async (req, res) => {
         `;
 
         res.json({ message: 'ลบสินค้าสำเร็จ' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/transfer-tasks/:id/items', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await sql.connect(dbConfig);
+        const result = await sql.query(`
+            SELECT r.id, r.จำนวน, s.ชื่อสินค้า
+            FROM รายการในใบงาน r
+            INNER JOIN สินค้า s ON r.สินค้า_id = s.id
+            WHERE r.ใบงาน_id = ${id}
+        `);
+        res.json(result.recordset);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
