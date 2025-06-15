@@ -311,6 +311,28 @@ app.get('/api/transfer-tasks/:id/items', async (req, res) => {
     }
 });
 
+// ดึง stock ของคลังตามคลัง_id
+app.get('/api/warehouse-stock/:warehouseId', async (req, res) => {
+    const { warehouseId } = req.params;
+    try {
+        await sql.connect(dbConfig);
+        const result = await sql.query(`
+            SELECT 
+                p.id,
+                p.ชื่อสินค้า,
+                p.SKU,
+                s.จำนวน
+            FROM สินค้า p
+            INNER JOIN สต็อกคลัง s ON s.สินค้า_id = p.id
+            WHERE s.คลัง_id = ${warehouseId}
+            ORDER BY p.id
+        `);
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 const PORT = 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Server running on 0.0.0.0:3000');

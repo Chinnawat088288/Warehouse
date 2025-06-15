@@ -112,7 +112,7 @@ function TransferPage() {
       boxShadow: '0 6px 32px rgba(49,46,129,0.13)',
       padding: 36
     }}>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
+      <div className="transfer-nav" style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
         {NAV.map(item => (
           <button
             key={item.key}
