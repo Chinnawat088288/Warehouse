@@ -31,6 +31,9 @@ function TransferPage() {
   const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [forecastQty, setForecastQty] = useState(null);
+  const [currentQty, setCurrentQty] = useState(null);
+
   const searchRef = useRef();
   const navigate = useNavigate();
 
@@ -58,10 +61,31 @@ function TransferPage() {
       )
     : products;
 
+  const fetchForecast = async (productId, warehouseId) => {
+    if (!productId || !warehouseId) {
+      setForecastQty(null);
+      setCurrentQty(null);
+      return;
+    }
+    try {
+      const res = await axios.get(`http://localhost:3000/api/forecast/${productId}/${warehouseId}`);
+      setForecastQty(res.data.forecast);
+      setCurrentQty(res.data.current);
+    } catch {
+      setForecastQty(null);
+      setCurrentQty(null);
+    }
+  };
+
   const handleSelectProduct = (p) => {
     setสินค้า_id(p.id);
     setProductSearch(p.ชื่อสินค้า + ' (' + p.id + ')');
     setShowDropdown(false);
+
+    let warehouseId = 2;
+    if (nav === 'storefront') warehouseId = 3;
+    if (nav === 'return') warehouseId = 1;
+    fetchForecast(p.id, warehouseId);
   };
 
   useEffect(() => {
@@ -116,7 +140,19 @@ function TransferPage() {
         {NAV.map(item => (
           <button
             key={item.key}
-            onClick={() => { setNav(item.key); setResult(''); setResultSuccess(false); }}
+            onClick={() => {
+              setNav(item.key);
+              setResult('');
+              setResultSuccess(false);
+              // เคลียร์ค่าทุกช่องเมื่อเปลี่ยนหน้า
+              setสินค้า_id('');
+              setProductSearch('');
+              setจำนวน('');
+              setForecastQty(null);
+              setCurrentQty(null);
+              setShowDropdown(false);
+              if (item.key === 'return') setคืนจากคลัง('2');
+            }}
             className={`main-nav-link${nav === item.key ? ' active' : ''}`}
             style={{
               borderRadius: 8,
@@ -161,9 +197,43 @@ function TransferPage() {
                   onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16,
+                    marginBottom: 8,
+                    // ถ้าช่องจำนวนไม่มี paddingRight ให้ลบออก หรือถ้าต้องการให้ปุ่มกากบาทไม่ทับ ให้เพิ่ม paddingRight: 36 กับช่องจำนวนด้วย
+                  }}
                   placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearch('');
+                      setสินค้า_id('');
+                      setShowDropdown(false);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: 12,
+                      top: 38,
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: 20,
+                      color: '#888',
+                      cursor: 'pointer',
+                      padding: 0,
+                      lineHeight: 1
+                    }}
+                    tabIndex={-1}
+                    aria-label="ล้างช่องค้นหา"
+                  >
+                    ×
+                  </button>
+                )}
                 {showDropdown && filteredProducts.length > 0 && (
                   <div style={{
                     position: 'absolute',
@@ -196,6 +266,60 @@ function TransferPage() {
                   </div>
                 )}
               </div>
+
+              {/* กล่องพยากรณ์แบบใหม่ (อยู่เหนือช่องจำนวนและอยู่ center) */}
+              {forecastQty !== null && currentQty !== null && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  margin: '0 0 10px 0' // ปรับ margin ให้เหลือเฉพาะด้านล่าง
+                }}>
+                  <div style={{
+                    background: currentQty < forecastQty
+                      ? 'linear-gradient(90deg,#fef2f2 60%,#fca5a5 100%)'
+                      : 'linear-gradient(90deg,#f0fdf4 60%,#bbf7d0 100%)',
+                    color: currentQty < forecastQty ? '#b91c1c' : '#15803d',
+                    border: `1.5px solid ${currentQty < forecastQty ? '#f87171' : '#22c55e'}`,
+                    borderRadius: 14,
+                    boxShadow: '0 2px 12px #0001',
+                    padding: '18px 28px',
+                    fontWeight: 600,
+                    fontSize: 18,
+                    maxWidth: 420,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 18,
+                    justifyContent: 'center'
+                  }}>
+                    <span style={{
+                      fontSize: 28,
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      {currentQty < forecastQty
+                        ? <span role="img" aria-label="alert" style={{ marginRight: 8 }}>⚠️</span>
+                        : <span role="img" aria-label="check" style={{ marginRight: 8 }}>✅</span>
+                      }
+                    </span>
+                    <span>
+                      วันนี้ <b>{products.find(x => x.id === Number(สินค้า_id))?.ชื่อสินค้า || ''}</b> ใน <b>{warehouseNames[
+                        nav === 'delivery' ? 2 : nav === 'storefront' ? 3 : 1
+                      ]}</b><br />
+                      <span style={{ fontWeight: 400 }}>
+                        ควรมี <b>{forecastQty}</b> ชิ้น &nbsp;|&nbsp; ตอนนี้มี <b>{currentQty}</b> ชิ้น<br />
+                        {currentQty < forecastQty
+                          ? <>ควรเติมเข้า <b style={{ color: '#dc2626', fontSize: 20 }}>{forecastQty - currentQty}</b> ชิ้น</>
+                          : <span style={{ color: '#16a34a' }}>ไม่ต้องเติมเพิ่ม</span>
+                        }
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ช่องกรอกจำนวน */}
               <div className="form-row">
                 <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
                 <input
@@ -209,6 +333,7 @@ function TransferPage() {
                   placeholder="กรอกจำนวน"
                 />
               </div>
+
               <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>
                 สร้างใบงาน
               </button>
@@ -241,9 +366,43 @@ function TransferPage() {
                   onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16,
+                    marginBottom: 8,
+                    // ถ้าช่องจำนวนไม่มี paddingRight ให้ลบออก หรือถ้าต้องการให้ปุ่มกากบาทไม่ทับ ให้เพิ่ม paddingRight: 36 กับช่องจำนวนด้วย
+                  }}
                   placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearch('');
+                      setสินค้า_id('');
+                      setShowDropdown(false);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: 12,
+                      top: 38,
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: 20,
+                      color: '#888',
+                      cursor: 'pointer',
+                      padding: 0,
+                      lineHeight: 1
+                    }}
+                    tabIndex={-1}
+                    aria-label="ล้างช่องค้นหา"
+                  >
+                    ×
+                  </button>
+                )}
                 {showDropdown && filteredProducts.length > 0 && (
                   <div style={{
                     position: 'absolute',
@@ -276,6 +435,60 @@ function TransferPage() {
                   </div>
                 )}
               </div>
+
+              {/* กล่องพยากรณ์แบบใหม่ (อยู่เหนือช่องจำนวนและอยู่ center) */}
+              {forecastQty !== null && currentQty !== null && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  margin: '0 0 10px 0' // ปรับ margin ให้เหลือเฉพาะด้านล่าง
+                }}>
+                  <div style={{
+                    background: currentQty < forecastQty
+                      ? 'linear-gradient(90deg,#fef2f2 60%,#fca5a5 100%)'
+                      : 'linear-gradient(90deg,#f0fdf4 60%,#bbf7d0 100%)',
+                    color: currentQty < forecastQty ? '#b91c1c' : '#15803d',
+                    border: `1.5px solid ${currentQty < forecastQty ? '#f87171' : '#22c55e'}`,
+                    borderRadius: 14,
+                    boxShadow: '0 2px 12px #0001',
+                    padding: '18px 28px',
+                    fontWeight: 600,
+                    fontSize: 18,
+                    maxWidth: 420,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 18,
+                    justifyContent: 'center'
+                  }}>
+                    <span style={{
+                      fontSize: 28,
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      {currentQty < forecastQty
+                        ? <span role="img" aria-label="alert" style={{ marginRight: 8 }}>⚠️</span>
+                        : <span role="img" aria-label="check" style={{ marginRight: 8 }}>✅</span>
+                      }
+                    </span>
+                    <span>
+                      วันนี้ <b>{products.find(x => x.id === Number(สินค้า_id))?.ชื่อสินค้า || ''}</b> ใน <b>{warehouseNames[
+                        nav === 'delivery' ? 2 : nav === 'storefront' ? 3 : 1
+                      ]}</b><br />
+                      <span style={{ fontWeight: 400 }}>
+                        ควรมี <b>{forecastQty}</b> ชิ้น &nbsp;|&nbsp; ตอนนี้มี <b>{currentQty}</b> ชิ้น<br />
+                        {currentQty < forecastQty
+                          ? <>ควรเติมเข้า <b style={{ color: '#dc2626', fontSize: 20 }}>{forecastQty - currentQty}</b> ชิ้น</>
+                          : <span style={{ color: '#16a34a' }}>ไม่ต้องเติมเพิ่ม</span>
+                        }
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ช่องกรอกจำนวน */}
               <div className="form-row">
                 <label style={{ fontWeight: 600, marginBottom: 6, color: '#312e81', display: 'block' }}>จำนวน</label>
                 <input
@@ -289,6 +502,7 @@ function TransferPage() {
                   placeholder="กรอกจำนวน"
                 />
               </div>
+
               <button type="submit" className="btn-primary" style={{ width: '100%', padding: 12, fontSize: 17, borderRadius: 8 }}>
                 สร้างใบงาน
               </button>
@@ -333,9 +547,43 @@ function TransferPage() {
                   onFocus={() => setShowDropdown(true)}
                   required
                   className="input"
-                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #c7d2fe', fontSize: 16, marginBottom: 8 }}
+                  style={{
+                    width: '100%',
+                    padding: 10,
+                    borderRadius: 8,
+                    border: '1px solid #c7d2fe',
+                    fontSize: 16,
+                    marginBottom: 8,
+                    // ถ้าช่องจำนวนไม่มี paddingRight ให้ลบออก หรือถ้าต้องการให้ปุ่มกากบาทไม่ทับ ให้เพิ่ม paddingRight: 36 กับช่องจำนวนด้วย
+                  }}
                   placeholder="ค้นหาด้วยรหัสหรือชื่อสินค้า"
                 />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearch('');
+                      setสินค้า_id('');
+                      setShowDropdown(false);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: 12,
+                      top: 38,
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: 20,
+                      color: '#888',
+                      cursor: 'pointer',
+                      padding: 0,
+                      lineHeight: 1
+                    }}
+                    tabIndex={-1}
+                    aria-label="ล้างช่องค้นหา"
+                  >
+                    ×
+                  </button>
+                )}
                 {showDropdown && filteredProducts.length > 0 && (
                   <div style={{
                     position: 'absolute',

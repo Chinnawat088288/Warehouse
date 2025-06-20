@@ -177,7 +177,7 @@ app.post('/api/transfer-tasks/:id/complete', async (req, res) => {
     }
 });
 
-// ดึงรายการสินค้า พร้อมจำนวนรวมในคลังทั้งหมด
+// ดึงรายการสินค้า พร้อมจำนวนในคลังสำรอง และคลังทั้งหมด
 app.get('/api/products', async (req, res) => {
     try {
         await sql.connect(dbConfig);
@@ -186,7 +186,8 @@ app.get('/api/products', async (req, res) => {
                 p.id,
                 p.ชื่อสินค้า,
                 p.SKU,
-                ISNULL(SUM(s.จำนวน), 0) AS จำนวนในคลังสำรอง
+                ISNULL(SUM(CASE WHEN s.คลัง_id = 1 THEN s.จำนวน ELSE 0 END), 0) AS จำนวนในคลังสำรอง,
+                ISNULL(SUM(s.จำนวน), 0) AS จำนวนรวมทั้งหมด
             FROM สินค้า p
             LEFT JOIN สต็อกคลัง s ON s.สินค้า_id = p.id
             GROUP BY p.id, p.ชื่อสินค้า, p.SKU
@@ -238,7 +239,7 @@ app.post('/api/add-product', async (req, res) => {
             SELECT id FROM สินค้า WHERE ชื่อสินค้า = ${ชื่อสินค้า}
         `;
         if (dupRes.recordset.length > 0) {
-            return res.status(400).json({ error: 'มีชื่อสินค้านี้อยู่แล้ว' });
+            return res.status(400).json({ error: 'มีชื่อสินค้าสินค้านี้อยู่แล้ว' });
         }
 
         // หา SKU ล่าสุดในฐานข้อมูล
@@ -328,6 +329,25 @@ app.get('/api/warehouse-stock/:warehouseId', async (req, res) => {
             ORDER BY p.id
         `);
         res.json(result.recordset);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/forecast/:productId/:warehouseId', async (req, res) => {
+    const { productId, warehouseId } = req.params;
+    try {
+        await sql.connect(dbConfig);
+        // ดึงจำนวนปัจจุบันในคลังปลายทาง
+        const stockRes = await sql.query`
+            SELECT ISNULL(จำนวน, 0) AS จำนวน
+            FROM สต็อกคลัง
+            WHERE สินค้า_id = ${productId} AND คลัง_id = ${warehouseId}
+        `;
+        const current = stockRes.recordset[0]?.จำนวน || 0;
+        // สมมุติพยากรณ์ (เช่น สุ่ม 20-50)
+        const forecast = Math.floor(Math.random() * 31) + 20;
+        res.json({ forecast, current });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

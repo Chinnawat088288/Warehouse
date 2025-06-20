@@ -437,3 +437,47 @@ body {
     color: #fff;
   }
 }
+
+/* ซ่อน nav-mobile บนจอใหญ่, โชว์ nav-desktop */
+.nav-mobile { display: none; }
+.nav-desktop { display: flex; }
+
+/* สำหรับมือถือ: โชว์ nav-mobile ล่าง, ซ่อน nav-desktop */
+@media (max-width: 600px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile {
+    display: flex !important;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    min-height: 60px; /* เพิ่มความสูงขั้นต่ำ */
+    background: #fff; /* หรือ #4844bc ถ้าอยากให้เหมือน header */
+    border-top: 1.5px solid #e0e7ff;
+    box-shadow: 0 -2px 12px #6366f122;
+    z-index: 100;
+    justify-content: space-around;
+    padding: 0;
+    border-radius: 0;
+  }
+  .main-nav-link {
+    flex: 1;
+    text-align: center;
+    font-size: 1.08rem;
+    padding: 16px 0 10px 0;
+    border-radius: 0;
+    border: none;
+    background: none;
+    color: #312e81;
+    font-weight: 700;
+  }
+  .main-nav-link.active {
+    background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
+    color: #fff;
+    font-weight: bold;
+    border-bottom: none;
+  }
+  /* กันเนื้อหาโดน nav-mobile บัง */
+  .main-container {
+    padding-bottom: 70px !important;
+  }
+}

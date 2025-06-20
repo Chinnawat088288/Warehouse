@@ -11,6 +11,7 @@ function AddProductPage() {
   const [addStockId, setAddStockId] = useState(null);
   const [addStockValue, setAddStockValue] = useState('');
   const [reduceMode, setReduceMode] = useState(false);
+  const [search, setSearch] = useState('');
 
   // โหลดสินค้าทั้งหมด
   const fetchProducts = async () => {
@@ -93,6 +94,12 @@ function AddProductPage() {
     }
   };
 
+  // ฟิลเตอร์สินค้า
+  const filteredProducts = products.filter(p =>
+    p.ชื่อสินค้า.toLowerCase().includes(search.toLowerCase()) ||
+    (p.SKU && p.SKU.toLowerCase().includes(search.toLowerCase()))
+  );
+
   return (
     <div className="main-container">
       <div className="card" style={{ maxWidth: 480, margin: '32px auto 0', padding: 32 }}>
@@ -137,19 +144,38 @@ function AddProductPage() {
 
       <div className="card" style={{ margin: '32px auto', padding: 32 }}>
         <h3 className="section-title">รายการสินค้าทั้งหมด</h3>
+        {/* ช่องค้นหา */}
+        <div style={{ marginBottom: 18, display: 'flex', justifyContent: 'flex-end' }}>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="ค้นหาชื่อสินค้า หรือ SKU"
+            style={{
+              width: 220,
+              padding: 10,
+              borderRadius: 8,
+              border: '1.5px solid #c7d2fe',
+              fontSize: 16,
+              margin: 0,
+              display: 'block'
+            }}
+          />
+        </div>
         <div className="table-container">
           <table className="product-table">
             <thead>
               <tr>
                 <th style={{ textAlign: 'left' }}>ชื่อสินค้า</th>
                 <th style={{ textAlign: 'center' }}>SKU</th>
+                <th style={{ textAlign: 'center' }}>จำนวนในคลังสำรอง</th>
                 <th style={{ textAlign: 'center' }}>คลังทั้งหมด</th>
-                <th style={{ textAlign: 'center' }}>จำนวน</th>
+                <th style={{ textAlign: 'center' }}>เพิ่ม/ลด</th>
                 <th style={{ textAlign: 'center' }}>ลบสินค้า</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => (
+              {filteredProducts.map(p => (
                 <tr key={p.id}>
                   <td data-label="ชื่อสินค้า">
                     <span
@@ -161,8 +187,13 @@ function AddProductPage() {
                     </span>
                   </td>
                   <td data-label="SKU" style={{ textAlign: 'center' }}>{p.SKU}</td>
-                  <td data-label="คลังทั้งหมด" style={{ textAlign: 'center' }}>{p.จำนวนในคลังสำรอง}</td>
-                  <td data-label="จำนวน" style={{ textAlign: 'center' }}>
+                  <td data-label="จำนวนในคลังสำรอง" style={{ textAlign: 'center' }}>
+                    {p.จำนวนในคลังสำรอง}
+                  </td>
+                  <td data-label="คลังทั้งหมด" style={{ textAlign: 'center' }}>
+                    {p.จำนวนรวมทั้งหมด}
+                  </td>
+                  <td data-label="เพิ่ม/ลด" style={{ textAlign: 'center' }}>
                     {addStockId === p.id ? (
                       <form
                         onSubmit={reduceMode ? handleReduceStock : handleAddStock}

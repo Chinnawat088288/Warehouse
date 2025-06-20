@@ -11,6 +11,7 @@ function WarehouseStockPage() {
   const [selected, setSelected] = useState(1);
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -19,6 +20,12 @@ function WarehouseStockPage() {
       .catch(() => setStock([]))
       .finally(() => setLoading(false));
   }, [selected]);
+
+  // ฟิลเตอร์สินค้า
+  const filteredStock = stock.filter(item =>
+    item.ชื่อสินค้า?.toLowerCase().includes(search.toLowerCase()) ||
+    (item.SKU && item.SKU.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div className="main-container">
@@ -41,6 +48,24 @@ function WarehouseStockPage() {
             </button>
           ))}
         </div>
+        {/* ช่องค้นหา */}
+        <div style={{ marginBottom: 18, display: 'flex', justifyContent: 'flex-end' }}>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="ค้นหาชื่อสินค้า หรือ SKU"
+            style={{
+              width: 220,
+              padding: 10,
+              borderRadius: 8,
+              border: '1.5px solid #c7d2fe',
+              fontSize: 16,
+              margin: 0,
+              display: 'block'
+            }}
+          />
+        </div>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 32 }}>กำลังโหลด...</div>
         ) : (
@@ -54,14 +79,14 @@ function WarehouseStockPage() {
                 </tr>
               </thead>
               <tbody>
-                {stock.map(item => (
+                {filteredStock.map(item => (
                   <tr key={item.id}>
                     <td data-label="ชื่อสินค้า">{item.ชื่อสินค้า}</td>
-                    <td data-label="SKU" style={{ color: item.SKU !== 'SKU' ? 'red' : undefined }}>{item.SKU}</td>
-                    <td data-label="จำนวน" style={{ textAlign: 'center', color: item.จำนวน !== 'จำนวน' ? 'red' : undefined }}>{item.จำนวน}</td>
+                    <td data-label="SKU">{item.SKU}</td>
+                    <td data-label="จำนวน" style={{ textAlign: 'center' }}>{item.จำนวน}</td>
                   </tr>
                 ))}
-                {stock.length === 0 && (
+                {filteredStock.length === 0 && (
                   <tr>
                     <td colSpan={3} style={{ textAlign: 'center', color: '#888' }}>ไม่มีข้อมูล</td>
                   </tr>
